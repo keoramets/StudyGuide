@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DB Study App — Chapters 1–3</title>
+    <style>
+      :root {
+        --bg: #0f172a; /* slate-900 */
+        --panel: #111827; /* gray-900 */
+        --muted: #cbd5e1; /* slate-300 */
+        --text: #e5e7eb; /* gray-200 */
+        --accent: #22d3ee; /* cyan-400 */
+        --accent-2: #a78bfa; /* violet-400 */
+        --good: #34d399; /* green-400 */
+        --bad: #f87171; /* red-400 */
+        --warn: #fbbf24; /* amber-400 */
+        --card: #0b1220; /* dark card */
+        --border: #1f2937; /* gray-800 */
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: radial-gradient(
+          1000px 500px at 20% 10%,
+          #0b1220 0%,
+          var(--bg) 50%
+        );
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 0 24px;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin: 0;
+        letter-spacing: 0.25px;
+      }
+      p {
+        color: var(--muted);
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        background: linear-gradient(180deg, #0c1222 0%, #0a0f1a 100%);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        cursor: pointer;
+        text-decoration: none;
+        color: var(--text);
+        background: #0d1425;
+        transition: transform 0.05s ease, border-color 0.2s;
+      }
+      .btn:hover {
+        border-color: var(--accent);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn.primary {
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        color: #0b1020;
+        border: none;
+      }
+      .btn.ghost {
+        background: transparent;
+      }
+      .btn.small {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .kpi {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+      }
+      .kpi .item {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .kpi .item h3 {
+        margin: 0 0 4px;
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .kpi .item .val {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #0b1324;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .mode-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+
+      .choice {
+        display: grid;
+        align-content: start;
+        gap: 10px;
+      }
+
+      .qhdr {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .qtext {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .options {
+        display: grid;
+        gap: 10px;
+        margin: 12px 0;
+      }
+      .option {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        cursor: pointer;
+      }
+      .option.correct {
+        outline: 2px solid var(--good);
+      }
+      .option.incorrect {
+        outline: 2px solid var(--bad);
+      }
+      .option.selected {
+        border-color: var(--accent);
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .conf {
+        display: flex;
+        gap: 8px;
+      }
+      .conf .cbtn {
+        border-radius: 10px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        background: #0a1120;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .conf .cbtn.active {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+      .conf .cbtn.low.active {
+        outline: 2px solid var(--warn);
+      }
+      .conf .cbtn.med.active {
+        outline: 2px solid var(--accent);
+      }
+      .conf .cbtn.high.active {
+        outline: 2px solid var(--good);
+      }
+
+      .progressbar {
+        height: 8px;
+        background: #0a0f18;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+      .progressbar > div {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      }
+
+      .flip {
+        perspective: 1000px;
+        height: 200px;
+        position: relative;
+        cursor: pointer;
+      }
+      .flip .inner {
+        position: absolute;
+        inset: 0;
+        transition: transform 0.5s;
+        transform-style: preserve-3d;
+      }
+      .flip.flipped .inner {
+        transform: rotateY(180deg);
+      }
+      .flip .face {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        backface-visibility: hidden;
+      }
+      .flip .back {
+        transform: rotateY(180deg);
+      }
+
+      .footer-note {
+        font-size: 12px;
+        color: var(--muted);
+        opacity: 0.9;
+      }
+      .tag {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .badge {
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #0c1426;
+        font-size: 12px;
+      }
+
+      .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .chips .chip {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #0b1120;
+        cursor: pointer;
+        color: var(--muted);
+      }
+      .chips .chip.active {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Database Study App • Chapters 1 to 3</h1>
+        <div class="chips" id="chapterFilter"></div>
+      </header>
+
+      <!-- Home Screen -->
+      <section id="home" class="card">
+        <p>
+          Choose a mode. Questions and flashcards are generated from your
+          chapter content. Options shuffle. Track answers and confidence. See a
+          simulated exam score at the end.
+        </p>
+        <div class="kpi" style="margin: 14px 0">
+          <div class="item">
+            <h3>Items</h3>
+            <div class="val" id="kItems">0</div>
+          </div>
+          <div class="item">
+            <h3>Chapters</h3>
+            <div class="val" id="kChapters">0</div>
+          </div>
+          <div class="item">
+            <h3>MC Choices</h3>
+            <div class="val">4 per question</div>
+          </div>
+        </div>
+        <div class="mode-grid">
+          <div class="card choice">
+            <h2>Flashcards</h2>
+            <p>Flip cards to see definitions. Mark confidence on each item.</p>
+            <div>
+              <button class="btn primary" id="startFlash">
+                Start Flashcards
+              </button>
+              <button class="btn ghost" id="reviewWeak">
+                Quick start: weakest first
+              </button>
+            </div>
+          </div>
+          <div class="card choice">
+            <h2>Multiple Choice</h2>
+            <p>
+              Pick the best definition for each term. Options shuffle. Score at
+              the end.
+            </p>
+            <div>
+              <button class="btn primary" id="startMCQ">Start Quiz</button>
+              <span class="tag">Confidence required per item</span>
+            </div>
+          </div>
+        </div>
+        <p class="footer-note" style="margin-top: 12px">
+          Tip: use the chapter filter chips above to include or exclude chapters
+          before starting.
+        </p>
+      </section>
+
+      <!-- Flashcards Screen -->
+      <section id="flash" class="hidden">
+        <div class="card" style="margin-bottom: 10px">
+          <div class="qhdr">
+            <div>
+              <span class="pill" id="fIdx">1</span>
+              <span class="pill" id="fChap">Chapter</span>
+            </div>
+            <div style="min-width: 200px" class="progressbar">
+              <div id="fProg"></div>
+            </div>
+          </div>
+          <div class="flip" id="flip">
+            <div class="inner">
+              <div class="face front">
+                <div class="qtext" id="fTerm">Term</div>
+              </div>
+              <div class="face back"><div id="fDef">Definition</div></div>
+            </div>
+          </div>
+          <div class="conf" style="margin: 12px 0">
+            <button class="cbtn low" data-conf="low">Low</button>
+            <button class="cbtn med" data-conf="med">Medium</button>
+            <button class="cbtn high" data-conf="high">High</button>
+          </div>
+          <div class="controls">
+            <button class="btn" id="fPrev">Prev</button>
+            <button class="btn" id="fFlip">Flip</button>
+            <button class="btn" id="fNext">Next</button>
+            <button class="btn ghost" id="fEnd">End Session</button>
+          </div>
+        </div>
+        <div id="fSummary" class="card hidden"></div>
+      </section>
+
+      <!-- MCQ Screen -->
+      <section id="mcq" class="hidden">
+        <div class="card" style="margin-bottom: 10px">
+          <div class="qhdr">
+            <div>
+              <span class="pill" id="qIdx">1</span>
+              <span class="pill" id="qChap">Chapter</span>
+            </div>
+            <div style="min-width: 200px" class="progressbar">
+              <div id="qProg"></div>
+            </div>
+          </div>
+          <div class="qtext" id="qText">Pick the correct definition</div>
+          <div class="options" id="qOptions"></div>
+          <div class="conf" style="margin: 12px 0">
+            <button class="cbtn low" data-conf="low">Low</button>
+            <button class="cbtn med" data-conf="med">Medium</button>
+            <button class="cbtn high" data-conf="high">High</button>
+          </div>
+          <div class="controls">
+            <button class="btn" id="qPrev">Prev</button>
+            <button class="btn" id="qNext">Next</button>
+            <button class="btn ghost" id="qEnd">Finish Quiz</button>
+          </div>
+        </div>
+        <div id="qSummary" class="card hidden"></div>
+      </section>
+    </div>
+
+    <script>
+      // ============================================================
+      // Data: JSON for Chapters 1–3 (all content you provided)
+      // Each entry: { term, definition, chapter, group? }
+      // ============================================================
+
+      const DATA = [
+        // CHAPTER ONE — Key Terms
+        {
+          term: "Analytical databases",
+          chapter: 1,
+          definition: "Databases that contain analytical information.",
+        },
+        {
+          term: "Analytical information",
+          chapter: 1,
+          definition:
+            "Information collected and used in support of analytical tasks; it is based on operational (transactional) information.",
+        },
+        {
+          term: "Conceptual database model",
+          chapter: 1,
+          definition:
+            "Visualization of the database requirements, independent of the logic on which a particular DBMS is based.",
+        },
+        {
+          term: "Data",
+          chapter: 1,
+          definition: "Facts that are recorded and can be accessed.",
+        },
+        {
+          term: "Information",
+          chapter: 1,
+          definition:
+            "Data that is accessed and formatted for use by someone for a particular purpose.",
+        },
+        {
+          term: "Metadata",
+          chapter: 1,
+          definition:
+            "Data about data. Data that describes the properties and structure of other data.",
+        },
+        {
+          term: "Database",
+          chapter: 1,
+          definition:
+            "A structured collection of related data stored on computer media; its purpose is to organize data in a way that facilitates efficient access to the information captured in the data.",
+        },
+        {
+          term: "Database metadata",
+          chapter: 1,
+          definition:
+            "Data about the database and its contents, including tables and their names, attributes with names and data types, and relationships with names and deletion rules.",
+        },
+        {
+          term: "Database administration and maintenance",
+          chapter: 1,
+          definition:
+            "Activities that support database end users, including providing security, ensuring sufficient storage, and implementing backup and recovery procedures.",
+        },
+        {
+          term: "Database administrator (DBA)",
+          chapter: 1,
+          definition:
+            "People who manage security, backup and recovery, monitor use and storage, and perform tasks related to the technical functioning of the database system.",
+        },
+        {
+          term: "Database analysts",
+          chapter: 1,
+          definition:
+            "People involved in requirements collection, definition, and visualization.",
+        },
+        {
+          term: "Database deployment",
+          chapter: 1,
+          definition:
+            "Release of the database system (database and front end applications) for end user use.",
+        },
+        {
+          term: "Database designers",
+          chapter: 1,
+          definition:
+            "Also called database modelers or architects. People involved in the database modeling stage of a project.",
+        },
+        {
+          term: "Database developers",
+          chapter: 1,
+          definition:
+            "People who implement the database model using DBMS software.",
+        },
+        {
+          term: "Database implementation",
+          chapter: 1,
+          definition:
+            "Using a DBMS to implement the database model as an actual database.",
+        },
+        {
+          term: "Database management system (DBMS)",
+          chapter: 1,
+          definition:
+            "Software used to create, store, retrieve, update, delete, and maintain databases.",
+        },
+        {
+          term: "Database modeling",
+          chapter: 1,
+          definition:
+            "Logical database modeling. Creating database models that are implementable by DBMS software. First step after requirements analysis.",
+        },
+        {
+          term: "Database system",
+          chapter: 1,
+          definition:
+            "Computer-based system whose purpose is to enable efficient interaction between users and the information captured in the database.",
+        },
+        {
+          term: "Database use",
+          chapter: 1,
+          definition:
+            "Insertion, modification, deletion, and retrieval of data in the database system by end users.",
+        },
+        {
+          term: "Developing front-end applications",
+          chapter: 1,
+          definition:
+            "Design and creation of applications for indirect database use by end users.",
+        },
+        {
+          term: "Direct interaction",
+          chapter: 1,
+          definition: "End user communicates with the DBMS directly.",
+        },
+        {
+          term: "End users",
+          chapter: 1,
+          definition:
+            "Business users who use a database system to support work or life tasks.",
+        },
+        {
+          term: "Front-end application",
+          chapter: 1,
+          definition:
+            "Applications created to provide a mechanism for interaction between users and the DBMS.",
+        },
+        {
+          term: "Front-end applications analysts",
+          chapter: 1,
+          definition:
+            "People who collect and define requirements for front-end applications.",
+        },
+        {
+          term: "Front-end applications developers",
+          chapter: 1,
+          definition: "People who create the front-end applications.",
+        },
+        {
+          term: "Indirect interaction",
+          chapter: 1,
+          definition:
+            "The type of interaction between the end user and the database that involves use of a front-end application.",
+        },
+        {
+          term: "Insertion, modification, deletion, and retrieval",
+          chapter: 1,
+          definition:
+            "Operations through which end users use the data in the database system.",
+        },
+        {
+          term: "Logical Database Models",
+          chapter: 1,
+          definition:
+            "Implementational database models that are implementable by DBMS software.",
+        },
+        {
+          term: "Operational databases",
+          chapter: 1,
+          definition:
+            "Databases that collect and present operational information in support of daily processes.",
+        },
+        {
+          term: "Operational information",
+          chapter: 1,
+          definition:
+            "Transactional information collected and used to support day-to-day operational needs.",
+        },
+        {
+          term: "Requirements collection, definition, and visualization",
+          chapter: 1,
+          definition:
+            "Requirements analysis. The first and most critical step that specifies which data the future system will hold, how it will hold it, and what capabilities the system will provide.",
+        },
+
+        // Steps in Development of DBMS lifecycle (expanded as individual items)
+        {
+          term: "Step 1: Database Requirements — Collection",
+          chapter: 1,
+          definition: "Elicit data and process needs from stakeholders.",
+        },
+        {
+          term: "Step 1: Database Requirements — Definition",
+          chapter: 1,
+          definition: "Consolidate and formalize the collected requirements.",
+        },
+        {
+          term: "Step 1: Database Requirements — Visualization",
+          chapter: 1,
+          definition:
+            "Represent requirements in a conceptual form for validation.",
+        },
+        {
+          term: "Step 2: Database Modeling",
+          chapter: 1,
+          definition:
+            "Create implementable logical database models from the approved requirements.",
+        },
+        {
+          term: "Step 3: Database Implementation",
+          chapter: 1,
+          definition: "Use DBMS to build schema objects and load data.",
+        },
+        {
+          term: "Step 4: Development of Front-end Apps",
+          chapter: 1,
+          definition:
+            "Design and create applications that connect users to the database.",
+        },
+        {
+          term: "Step 5: Database Deployment",
+          chapter: 1,
+          definition:
+            "Release the database system and front ends for end user use.",
+        },
+        {
+          term: "Step 6: Database Use",
+          chapter: 1,
+          definition: "Operate the system through CRUD and queries by users.",
+        },
+        {
+          term: "Step 7: Database Administration — Structure changes",
+          chapter: 1,
+          definition: "Manage schema evolution and tuning.",
+        },
+        {
+          term: "Step 7: Database Administration — Security",
+          chapter: 1,
+          definition: "Provide security for the data in databases.",
+        },
+        {
+          term: "Step 7: Database Administration — Backup and recovery",
+          chapter: 1,
+          definition: "Implement backup schedules and recovery procedures.",
+        },
+
+        // CHAPTER TWO — Key Terms
+        {
+          term: "Associative entity",
+          chapter: 2,
+          definition:
+            "An ER construct used as an alternative way of depicting many to many relationships.",
+        },
+        {
+          term: "Attribute (of an entity)",
+          chapter: 2,
+          definition: "A characteristic of an entity that becomes a column.",
+        },
+        {
+          term: "Binary relationship",
+          chapter: 2,
+          definition:
+            "An ER relationship that involves two entities (degree 2).",
+        },
+        {
+          term: "Candidate key",
+          chapter: 2,
+          definition:
+            "An attribute that could be chosen as the unique identifier of an entity instance but may not be chosen.",
+        },
+        {
+          term: "Cardinality constraints",
+          chapter: 2,
+          definition:
+            "ER symbols that depict how many instances of one entity are associated with instances of another entity.",
+        },
+        {
+          term: "Composite attribute",
+          chapter: 2,
+          definition: "A non key attribute composed of two or more attributes.",
+        },
+        {
+          term: "Composite unique attribute",
+          chapter: 2,
+          definition:
+            "A unique key attribute composed of two or more attributes.",
+        },
+        {
+          term: "Database requirements",
+          chapter: 2,
+          definition:
+            "Statements that define details and constraints of the data and metadata for the database being developed.",
+        },
+        {
+          term: "Degree of a relationship",
+          chapter: 2,
+          definition: "The number of entities involved in the relationship.",
+        },
+        {
+          term: "Derived attribute",
+          chapter: 2,
+          definition:
+            "An attribute whose value can be computed and is therefore not normally stored.",
+        },
+        {
+          term: "Enhanced ER (EER)",
+          chapter: 2,
+          definition:
+            "An expanded ER notation that depicts additional concepts beyond standard ER modeling.",
+        },
+        {
+          term: "Entity",
+          chapter: 2,
+          definition:
+            "Something about which we want to store data. Becomes a table.",
+        },
+        {
+          term: "Entity instances",
+          chapter: 2,
+          definition: "An individual occurrence of an entity. Becomes a row.",
+        },
+        {
+          term: "Entity relationship (ER) modeling",
+          chapter: 2,
+          definition: "Graphically representing database requirements.",
+        },
+        {
+          term: "ER diagram (ERD)",
+          chapter: 2,
+          definition: "The blueprint of the database.",
+        },
+        {
+          term: "Exact minimum and/or maximum cardinality",
+          chapter: 2,
+          definition:
+            "Minimum and or maximum cardinality that is known in advance.",
+        },
+        {
+          term: "Identifying relationship",
+          chapter: 2,
+          definition:
+            "A relationship between a weak entity and its owner entity in an ER diagram.",
+        },
+        {
+          term: "Many to many relationship (M:N)",
+          chapter: 2,
+          definition:
+            "A relationship whose maximum cardinality is many on both sides.",
+        },
+        {
+          term: "Maximum cardinality",
+          chapter: 2,
+          definition:
+            "The part of the cardinality symbol closer to the entity rectangle that shows the maximum number of instances related to one instance of another entity.",
+        },
+        {
+          term: "Minimum cardinality (participation)",
+          chapter: 2,
+          definition:
+            "The part of the cardinality symbol farther from the entity rectangle that shows the minimum number of instances related to one instance of another entity.",
+        },
+        {
+          term: "Multivalued attribute",
+          chapter: 2,
+          definition:
+            "An attribute that can have multiple values, for example phone number.",
+        },
+        {
+          term: "One to many relationship (1:M)",
+          chapter: 2,
+          definition:
+            "A relationship whose maximum cardinality on one side is many and on the other side is one.",
+        },
+        {
+          term: "One to one relationship (1:1)",
+          chapter: 2,
+          definition:
+            "A relationship with maximum cardinality one on both sides.",
+        },
+        {
+          term: "Optional attribute",
+          chapter: 2,
+          definition: "An attribute that need not have a value.",
+        },
+        {
+          term: "Owner entity",
+          chapter: 2,
+          definition:
+            "An entity whose unique attribute provides a way to identify instances of a weak entity.",
+        },
+        {
+          term: "Partial key",
+          chapter: 2,
+          definition:
+            "An attribute of a weak entity that with the owner key uniquely identifies the weak entity instance.",
+        },
+        {
+          term: "Relationship",
+          chapter: 2,
+          definition: "An association between two entities.",
+        },
+        {
+          term: "Relationship attributes",
+          chapter: 2,
+          definition:
+            "Attributes that are associated with a relationship not the entities.",
+        },
+        {
+          term: "Relationship instances",
+          chapter: 2,
+          definition:
+            "An instance of one entity related to an instance of another entity.",
+        },
+        {
+          term: "Relationship role",
+          chapter: 2,
+          definition:
+            "Optional syntax in ER diagrams to clarify each entity role in a relationship.",
+        },
+        {
+          term: "Ternary relationship",
+          chapter: 2,
+          definition: "An ER relationship involving three entities (degree 3).",
+        },
+        {
+          term: "Unary relationship (recursive)",
+          chapter: 2,
+          definition:
+            "An ER relationship that involves one entity in a relationship with itself (degree 1).",
+        },
+        {
+          term: "Unique attribute",
+          chapter: 2,
+          definition:
+            "An attribute that is different for each entity instance. A primary key candidate.",
+        },
+        {
+          term: "Weak entity",
+          chapter: 2,
+          definition:
+            "An ER construct used to depict entities that do not have a unique attribute of their own.",
+        },
+
+        // CHAPTER THREE — Key Terms
+        {
+          term: "Attribute (of a relation)",
+          chapter: 3,
+          definition: "A column of a relation.",
+        },
+        {
+          term: "Autonumber data type",
+          chapter: 3,
+          definition:
+            "A data type that automatically generates consecutive numeric values in a column, often used for primary keys.",
+        },
+        {
+          term: "Bridge relation",
+          chapter: 3,
+          definition:
+            "The relation that represents a many to many relationship.",
+        },
+        {
+          term: "Business rules",
+          chapter: 3,
+          definition:
+            "User designed database constraints that specify restrictions not in standard ER notation.",
+        },
+        {
+          term: "Column",
+          chapter: 3,
+          definition:
+            "See attribute of a relation. A vertical set of values for one field.",
+        },
+        {
+          term: "Composite primary key",
+          chapter: 3,
+          definition:
+            "A primary key of a relation that is composed of multiple columns.",
+        },
+        {
+          term: "Designer created primary key",
+          chapter: 3,
+          definition:
+            "A primary key column added by the database designer that was not called for by original requirements.",
+        },
+        {
+          term: "Domain constraint",
+          chapter: 3,
+          definition:
+            "Within a relation, all values in each column must be from the same predefined domain.",
+        },
+        {
+          term: "Entity integrity constraint",
+          chapter: 3,
+          definition: "All primary key columns must have values.",
+        },
+        { term: "Field", chapter: 3, definition: "See column." },
+        {
+          term: "Foreign key",
+          chapter: 3,
+          definition:
+            "A column in a relation that refers to a primary key column in another relation.",
+        },
+        {
+          term: "Implicit constraints",
+          chapter: 3,
+          definition:
+            "Relational model rules that any valid relational database must satisfy.",
+        },
+        {
+          term: "Primary key",
+          chapter: 3,
+          definition:
+            "A column or set of columns whose value is unique for each row. If multiple candidates exist, one is chosen.",
+        },
+        {
+          term: "Primary key constraint",
+          chapter: 3,
+          definition: "Each relation must have a primary key.",
+        },
+        {
+          term: "Record",
+          chapter: 3,
+          definition: "A row of data within a relation.",
+        },
+        {
+          term: "Referential integrity constraint",
+          chapter: 3,
+          definition:
+            "For each foreign key value, it must match a primary key in the referenced relation or be NULL.",
+        },
+        {
+          term: "Referential integrity lines",
+          chapter: 3,
+          definition:
+            "Lines in a relational schema pointing from foreign keys to the corresponding primary key.",
+        },
+        {
+          term: "Relation",
+          chapter: 3,
+          definition: "A table in a relational database with rows and columns.",
+        },
+        {
+          term: "Relational database",
+          chapter: 3,
+          definition:
+            "A database modeled with the relational model as a collection of related relations with unique names.",
+        },
+        {
+          term: "Relational database model",
+          chapter: 3,
+          definition:
+            "The most commonly used logical model representing a database as a set of related tables.",
+        },
+        {
+          term: "Relational DBMS (RDBMS)",
+          chapter: 3,
+          definition:
+            "DBMS software based on the relational model used to implement relational databases.",
+        },
+        {
+          term: "Relational schema",
+          chapter: 3,
+          definition: "A visual depiction of the relational database model.",
+        },
+        { term: "Relational table", chapter: 3, definition: "See relation." },
+        { term: "Row", chapter: 3, definition: "See record. A tuple." },
+        { term: "Table", chapter: 3, definition: "See relation." },
+        { term: "Tuple", chapter: 3, definition: "See row." },
+        {
+          term: "User defined constraints",
+          chapter: 3,
+          definition:
+            "Database constraints added by the database designer beyond implicit rules.",
+        },
+      ];
+
+      // Helpers
+      const shuffle = (arr) => {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      };
+
+      const uniqBy = (arr, keyFn) => {
+        const seen = new Set();
+        return arr.filter((x) => {
+          const k = keyFn(x);
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+      };
+
+      // Prepare data: de duplicate exact term text within same chapter if any accidental repeats
+      const ITEMS = uniqBy(
+        DATA,
+        (x) => `${x.chapter}::${x.term.trim().toLowerCase()}`
+      );
+
+      // Confidence weights for metrics and simulation
+      const CONF_WEIGHTS = { low: 1, med: 2, high: 3 };
+      const CONF_PROBS = { low: 0.5, med: 0.7, high: 0.9 };
+
+      // State
+      let activeChapters = new Set([1, 2, 3]);
+
+      // UI Refs
+      const home = document.getElementById("home");
+      const flash = document.getElementById("flash");
+      const mcq = document.getElementById("mcq");
+
+      // Home KPIs
+      const kItems = document.getElementById("kItems");
+      const kChapters = document.getElementById("kChapters");
+
+      // Chapter filter chips
+      const chipsWrap = document.getElementById("chapterFilter");
+
+      function refreshKPIs() {
+        const count = ITEMS.filter((i) => activeChapters.has(i.chapter)).length;
+        kItems.textContent = String(count);
+        kChapters.textContent = String(activeChapters.size);
+      }
+
+      function renderChapterChips() {
+        chipsWrap.innerHTML = "";
+        [1, 2, 3].forEach((ch) => {
+          const chip = document.createElement("button");
+          chip.className = "chip" + (activeChapters.has(ch) ? " active" : "");
+          chip.textContent = `Chapter ${ch}`;
+          chip.onclick = () => {
+            if (activeChapters.has(ch)) activeChapters.delete(ch);
+            else activeChapters.add(ch);
+            renderChapterChips();
+            refreshKPIs();
+          };
+          chipsWrap.appendChild(chip);
+        });
+      }
+
+      renderChapterChips();
+      refreshKPIs();
+
+      // ===================== FLASHCARDS =====================
+      const fIdx = document.getElementById("fIdx");
+      const fChap = document.getElementById("fChap");
+      const fProg = document.getElementById("fProg");
+      const fTerm = document.getElementById("fTerm");
+      const fDef = document.getElementById("fDef");
+      const flip = document.getElementById("flip");
+      const fPrev = document.getElementById("fPrev");
+      const fFlip = document.getElementById("fFlip");
+      const fNext = document.getElementById("fNext");
+      const fEnd = document.getElementById("fEnd");
+      const fSummary = document.getElementById("fSummary");
+
+      let fDeck = [];
+      let fPos = 0;
+      let fConf = {}; // index -> conf
+
+      const confBtnsFlash = Array.from(
+        document.querySelectorAll("#flash .cbtn")
+      );
+      confBtnsFlash.forEach((btn) =>
+        btn.addEventListener("click", () => {
+          confBtnsFlash.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          fConf[fPos] = btn.dataset.conf;
+        })
+      );
+
+      function setFlashState() {
+        const item = fDeck[fPos];
+        fIdx.textContent = `${fPos + 1}/${fDeck.length}`;
+        fChap.textContent = `Ch ${item.chapter}`;
+        fTerm.textContent = item.term;
+        fDef.textContent = item.definition;
+        flip.classList.remove("flipped");
+        const pct = (fPos / fDeck.length) * 100;
+        fProg.style.width = pct + "%";
+        confBtnsFlash.forEach((b) => b.classList.remove("active"));
+        if (fConf[fPos]) {
+          const b = confBtnsFlash.find((b) => b.dataset.conf === fConf[fPos]);
+          if (b) b.classList.add("active");
+        }
+      }
+
+      function startFlashcards(order = "shuffle") {
+        const pool = ITEMS.filter((i) => activeChapters.has(i.chapter));
+        fDeck =
+          order === "weak"
+            ? pool
+                .slice()
+                .sort(
+                  (a, b) => getTermWeakness(b.term) - getTermWeakness(a.term)
+                )
+            : shuffle(pool);
+        fPos = 0;
+        fConf = {};
+        fSummary.classList.add("hidden");
+        home.classList.add("hidden");
+        mcq.classList.add("hidden");
+        flash.classList.remove("hidden");
+        setFlashState();
+      }
+
+      function getTermWeakness(term) {
+        // If we had past session history, use it. For now, neutral 0.
+        return 0;
+      }
+
+      fPrev.onclick = () => {
+        if (fPos > 0) {
+          fPos--;
+          setFlashState();
+        }
+      };
+      fFlip.onclick = () => flip.classList.toggle("flipped");
+      flip.onclick = () => flip.classList.toggle("flipped");
+      fNext.onclick = () => {
+        if (fPos < fDeck.length - 1) {
+          fPos++;
+          setFlashState();
+        }
+      };
+      fEnd.onclick = () => endFlashSummary();
+
+      function endFlashSummary() {
+        const total = fDeck.length;
+        const dist = { low: 0, med: 0, high: 0, none: 0 };
+        Object.keys(fDeck).forEach((idx) => {
+          const c = fConf[idx];
+          if (!c) dist.none++;
+          else dist[c]++;
+        });
+        const chosen = dist.low + dist.med + dist.high;
+        const meanConf = chosen
+          ? (dist.low * CONF_PROBS.low +
+              dist.med * CONF_PROBS.med +
+              dist.high * CONF_PROBS.high) /
+            chosen
+          : 0;
+
+        fSummary.innerHTML = `
+        <h2>Flashcards summary</h2>
+        <div class="kpi" style="margin: 12px 0;">
+          <div class="item"><h3>Total items</h3><div class="val">${total}</div></div>
+          <div class="item"><h3>Marked with confidence</h3><div class="val">${chosen}</div></div>
+          <div class="item"><h3>Mean confidence (0 to 1)</h3><div class="val">${meanConf.toFixed(
+            2
+          )}</div></div>
+        </div>
+        <p>Distribution:</p>
+        <div class="chips">
+          <span class="badge">Low: ${dist.low}</span>
+          <span class="badge">Medium: ${dist.med}</span>
+          <span class="badge">High: ${dist.high}</span>
+          <span class="badge">Unmarked: ${dist.none}</span>
+        </div>
+        <p class="footer-note" style="margin-top:10px;">Tip: run the MC quiz next to convert your confidence into a scored simulation.</p>
+        <div class="controls" style="margin-top:10px;">
+          <button class="btn" onclick="goHome()">Back to Home</button>
+          <button class="btn primary" onclick="startMCQ()">Start Quiz</button>
+        </div>
+      `;
+        fSummary.classList.remove("hidden");
+      }
+
+      document.getElementById("startFlash").onclick = () =>
+        startFlashcards("shuffle");
+      document.getElementById("reviewWeak").onclick = () =>
+        startFlashcards("weak");
+
+      // ===================== MCQ QUIZ =====================
+      const qIdx = document.getElementById("qIdx");
+      const qChap = document.getElementById("qChap");
+      const qProg = document.getElementById("qProg");
+      const qText = document.getElementById("qText");
+      const qOptions = document.getElementById("qOptions");
+      const qPrev = document.getElementById("qPrev");
+      const qNext = document.getElementById("qNext");
+      const qEnd = document.getElementById("qEnd");
+      const qSummary = document.getElementById("qSummary");
+
+      const confBtnsQuiz = Array.from(document.querySelectorAll("#mcq .cbtn"));
+
+      let qDeck = [];
+      let qPos = 0;
+      let answers = []; // {choiceIdx, correctIdx, conf}
+
+      confBtnsQuiz.forEach((btn) =>
+        btn.addEventListener("click", () => {
+          confBtnsQuiz.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          const conf = btn.dataset.conf;
+          if (!answers[qPos])
+            answers[qPos] = { choiceIdx: null, correctIdx: 0, conf: conf };
+          else answers[qPos].conf = conf;
+        })
+      );
+
+      function startMCQ() {
+        const pool = ITEMS.filter((i) => activeChapters.has(i.chapter));
+        const base = shuffle(pool);
+        qDeck = base.map((item) => buildQuestion(item, pool));
+        qPos = 0;
+        answers = [];
+        home.classList.add("hidden");
+        flash.classList.add("hidden");
+        mcq.classList.remove("hidden");
+        qSummary.classList.add("hidden");
+        setQuestion();
+      }
+
+      function buildQuestion(item, pool) {
+        // Build 4 options: 1 correct, 3 distractors from same chapter if possible
+        const sameChap = pool.filter(
+          (x) => x.chapter === item.chapter && x.term !== item.term
+        );
+        const others =
+          sameChap.length >= 3
+            ? sameChap
+            : pool.filter((x) => x.term !== item.term);
+        const distractors = shuffle(others)
+          .slice(0, 3)
+          .map((x) => x.definition);
+        const opts = shuffle([item.definition, ...distractors]);
+        const correctIdx = opts.indexOf(item.definition);
+        return {
+          term: item.term,
+          chapter: item.chapter,
+          options: opts,
+          correctIdx,
+        };
+      }
+
+      function setQuestion() {
+        const q = qDeck[qPos];
+        qIdx.textContent = `${qPos + 1}/${qDeck.length}`;
+        qChap.textContent = `Ch ${q.chapter}`;
+        qText.textContent = `What is the best definition of: ${q.term}?`;
+        qOptions.innerHTML = "";
+        q.options.forEach((opt, i) => {
+          const div = document.createElement("div");
+          div.className = "option";
+          div.innerHTML = opt;
+          div.onclick = () => selectOption(i);
+          qOptions.appendChild(div);
+        });
+        const pct = (qPos / qDeck.length) * 100;
+        qProg.style.width = pct + "%";
+
+        // restore previous
+        const a = answers[qPos];
+        confBtnsQuiz.forEach((b) => b.classList.remove("active"));
+        if (a && a.conf) {
+          const b = confBtnsQuiz.find((b) => b.dataset.conf === a.conf);
+          if (b) b.classList.add("active");
+        }
+        if (a && a.choiceIdx != null) {
+          [...qOptions.children].forEach((node, idx) => {
+            if (idx === a.choiceIdx) node.classList.add("selected");
+          });
+        }
+      }
+
+      function selectOption(idx) {
+        const q = qDeck[qPos];
+        if (!answers[qPos])
+          answers[qPos] = {
+            choiceIdx: null,
+            correctIdx: q.correctIdx,
+            conf: null,
+          };
+        answers[qPos].choiceIdx = idx;
+        [...qOptions.children].forEach((node, i) => {
+          node.classList.toggle("selected", i === idx);
+        });
+      }
+
+      qPrev.onclick = () => {
+        if (qPos > 0) {
+          qPos--;
+          setQuestion();
+        }
+      };
+      qNext.onclick = () => {
+        if (qPos < qDeck.length - 1) {
+          qPos++;
+          setQuestion();
+        }
+      };
+      qEnd.onclick = () => finishQuiz();
+
+      function finishQuiz() {
+        // Score
+        let correct = 0;
+        let total = qDeck.length;
+        let weightSum = 0;
+        let weightCorrect = 0;
+        let confCounts = { low: 0, med: 0, high: 0, none: 0 };
+        const perChapter = {};
+
+        qDeck.forEach((q, idx) => {
+          const ans = answers[idx] || {
+            choiceIdx: null,
+            correctIdx: q.correctIdx,
+            conf: null,
+          };
+          const isCorrect = ans.choiceIdx === q.correctIdx;
+          if (isCorrect) correct++;
+          const w = ans.conf ? CONF_WEIGHTS[ans.conf] : 1;
+          if (ans.conf) confCounts[ans.conf]++;
+          else confCounts.none++;
+          weightSum += w;
+          if (isCorrect) weightCorrect += w;
+          if (!perChapter[q.chapter])
+            perChapter[q.chapter] = { correct: 0, total: 0 };
+          perChapter[q.chapter].total++;
+          if (isCorrect) perChapter[q.chapter].correct++;
+        });
+
+        const accuracy = total ? correct / total : 0;
+        const weightedAcc = weightSum ? weightCorrect / weightSum : 0;
+        const meanConf = (() => {
+          const chosen = confCounts.low + confCounts.med + confCounts.high;
+          if (!chosen) return 0;
+          return (
+            (confCounts.low * CONF_PROBS.low +
+              confCounts.med * CONF_PROBS.med +
+              confCounts.high * CONF_PROBS.high) /
+            chosen
+          );
+        })();
+        const calibrationGap = meanConf - accuracy;
+
+        // Simple simulated exam score: use weighted accuracy as base, then subtract half of overconfidence, add half of underconfidence
+        let simulated =
+          weightedAcc -
+          0.5 * Math.max(0, calibrationGap) +
+          0.5 * Math.max(0, -calibrationGap);
+        simulated = Math.max(0, Math.min(1, simulated));
+
+        // Build summary
+        const rows = Object.entries(perChapter)
+          .map(([ch, s]) => {
+            const pct = s.total
+              ? ((s.correct / s.total) * 100).toFixed(0)
+              : "0";
+            return `<tr><td>Chapter ${ch}</td><td>${s.correct}/${s.total}</td><td>${pct}%</td></tr>`;
+          })
+          .join("");
+
+        qSummary.innerHTML = `
+        <h2>Quiz summary</h2>
+        <div class="kpi" style="margin: 12px 0;">
+          <div class="item"><h3>Score</h3><div class="val">${correct}/${total} (${(
+          accuracy * 100
+        ).toFixed(0)}%)</div></div>
+          <div class="item"><h3>Weighted accuracy</h3><div class="val">${(
+            weightedAcc * 100
+          ).toFixed(0)}%</div></div>
+          <div class="item"><h3>Mean confidence</h3><div class="val">${(
+            meanConf * 100
+          ).toFixed(0)}%</div></div>
+          <div class="item"><h3>Calibration gap</h3><div class="val">${(
+            calibrationGap * 100
+          ).toFixed(0)}%</div></div>
+          <div class="item"><h3>Simulated exam</h3><div class="val" style="color: var(${
+            simulated >= accuracy ? "--good" : "--warn"
+          })">${(simulated * 100).toFixed(0)}%</div></div>
+        </div>
+        <p>Confidence distribution:</p>
+        <div class="chips">
+          <span class="badge">Low: ${confCounts.low}</span>
+          <span class="badge">Medium: ${confCounts.med}</span>
+          <span class="badge">High: ${confCounts.high}</span>
+          <span class="badge">Unmarked: ${confCounts.none}</span>
+        </div>
+        <h3 style="margin-top: 14px;">By chapter</h3>
+        <div class="card" style="padding:0; overflow-x:auto;">
+          <table style="width:100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background:#0b1426;">
+                <th style="text-align:left; padding:10px; border-bottom:1px solid var(--border);">Chapter</th>
+                <th style="text-align:left; padding:10px; border-bottom:1px solid var(--border);">Correct</th>
+                <th style="text-align:left; padding:10px; border-bottom:1px solid var(--border);">Accuracy</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+        <p class="footer-note" style="margin-top:10px;">Simulated exam uses your confidence to weight items and adjusts for over or under confidence using a simple calibration rule.</p>
+        <div class="controls" style="margin-top:10px;">
+          <button class="btn" onclick="startMCQ()">Retry quiz</button>
+          <button class="btn" onclick="goHome()">Back to Home</button>
+        </div>
+      `;
+
+        // Visual feedback on options for last question answered
+        const q = qDeck[qPos];
+        [...qOptions.children].forEach((node, idx) => {
+          node.classList.toggle("correct", idx === q.correctIdx);
+          const a = answers[qPos];
+          if (
+            a &&
+            a.choiceIdx != null &&
+            idx === a.choiceIdx &&
+            a.choiceIdx !== q.correctIdx
+          )
+            node.classList.add("incorrect");
+        });
+
+        qSummary.classList.remove("hidden");
+      }
+
+      document.getElementById("startMCQ").onclick = () => startMCQ();
+
+      // ===================== Navigation =====================
+      window.goHome = (function () {
+        flash.classList.add("hidden");
+        mcq.classList.add("hidden");
+        home.classList.remove("hidden");
+        refreshKPIs();
+      })(
+        // Initialize
+        function init() {
+          // nothing else for now
+        }
+      )();
+    </script>
+  </body>
+</html>
